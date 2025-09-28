@@ -131,11 +131,12 @@
   environment.variables = {
     EDITOR = "nvim";
   };
+
   # List packages installed in system profile.
   # You can use https://search.nixos.org/ to find more packages (and options).
   environment.systemPackages = with pkgs; [
     inputs.neovim-nightly-overlay.packages.${pkgs.system}.default
-	python312Packages.pynvim
+	#python312Packages.pynvim
     wget
     kitty
     wofi
@@ -143,7 +144,9 @@
     hyprpanel
     hyprpaper
     git
-    python3
+    (python3.withPackages (python-pkgs: with python-pkgs; [
+	pynvim
+	]))
     luajitPackages.luarocks-nix # maybe not needed anymore without mason?
     lua51Packages.lua
     p7zip
