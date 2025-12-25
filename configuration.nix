@@ -2,13 +2,7 @@
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
-{
-  config,
-  lib,
-  pkgs,
-  inputs,
-  ...
-}:
+{ config, lib, pkgs, inputs, ... }:
 
 {
   imports = [
@@ -23,7 +17,7 @@
   nixpkgs.config.allowUnfree = true;
   #nix.settings.allowUnfree = true;
 
-  nix.settings.experimental-features = [ "nix-command" "flakes"];
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   #fileSystems = {
   #  "/".options = [ "compress=zstd" ];
@@ -39,11 +33,12 @@
 
   # Pick only one of the below networking options.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-  networking.networkmanager.enable = true; # Easiest to use and most distros use this by default.
+  networking.networkmanager.enable =
+    true; # Easiest to use and most distros use this by default.
+
+  hardware.bluetooth.enable = true;
 
   networking.hosts = {
-    "192.168.0.235" = [ "tokyo" ];
-    "192.168.0.5" = [ "pihole" ];
   };
 
   # Set your time zone.
@@ -83,6 +78,29 @@
     alsa.support32Bit = true;
   };
 
+	# services.tailscale = {
+	# 	enable = true;
+	# 	useRoutingFeatures = "both";
+	# };
+
+	services.netbird = {
+		enable = true;
+	};
+
+  programs.uwsm = {
+    enable = true;
+    waylandCompositors = {
+      hyprland = {
+        prettyName = "Hyprland";
+        comment = "Hyprland compositor managed by UWSM";
+        binPath = "/run/current-system/sw/bin/Hyprland";
+      };
+      river = {
+        prettyName = "River";
+        binPath = "/run/current-system/sw/bin/river";
+      };
+    };
+  };
   # Enable touchpad support (enabled default in most desktopManager).
   # services.libinput.enable = true;
 
@@ -91,19 +109,11 @@
   #Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.kosan = {
     isNormalUser = true;
-    extraGroups = [
-      "wheel"
-      "gamemode"
-    ]; # Enable ‘sudo’ for the user.
-    packages = with pkgs; [
-      tree
-    ];
+    extraGroups = [ "wheel" "gamemode" ]; # Enable ‘sudo’ for the user.
+    packages = with pkgs; [ tree ];
   };
 
-  nix.settings.trusted-users = [
-    "root"
-    "kosan"
-  ];
+  nix.settings.trusted-users = [ "root" "kosan" ];
 
   programs.nix-ld.enable = true;
 
@@ -112,9 +122,9 @@
     enable = true;
     clean.enable = true;
   };
+
   programs.hyprland = {
     enable = true;
-    withUWSM = true;
     xwayland.enable = true;
   };
   #programs.waybar.enable = true;
@@ -123,37 +133,63 @@
 
   programs.gamemode.enable = true;
 
+	services.gvfs.enable = true;
+	services.tumbler.enable = true;
+
+	programs.xfconf.enable = true;
+
+	programs.thunar = {
+		enable = true;
+		plugins = with pkgs.xfce; [
+			thunar-archive-plugin
+			thunar-volman
+		];
+	};
+
   fonts.packages = with pkgs; [
+  fira-code
+  fira-code-symbols
     nerd-fonts.fira-code
     nerd-fonts.droid-sans-mono
   ];
 
-  environment.variables = {
-    EDITOR = "nvim";
-  };
-
+  environment.variables = { EDITOR = "nvim"; };
   # List packages installed in system profile.
   # You can use https://search.nixos.org/ to find more packages (and options).
   environment.systemPackages = with pkgs; [
+    home-manager
+		qimgv
+		cmake
+		libvterm
+		ansible
     inputs.neovim-nightly-overlay.packages.${pkgs.system}.default
-	#python312Packages.pynvim
+		file-roller
+		#(xfce.thunar.override { thunarPlugins = [ xfce.thunar-archive-plugin ]; })
+    foot
+    pkgs.beam27Packages.elixir
+    pkgs.beam28Packages.erlang
+		busybox
+		pkgs.netbird-ui
+    #python312Packages.pynvim
+		winetricks
+		protontricks
+		wineWow64Packages.staging 
     wget
+    glances
     kitty
     wofi
     x11_ssh_askpass
     hyprpanel
     hyprpaper
     git
-    (python3.withPackages (python-pkgs: with python-pkgs; [
-	pynvim
-	]))
+    (python3.withPackages (python-pkgs: with python-pkgs; [ pynvim ]))
     luajitPackages.luarocks-nix # maybe not needed anymore without mason?
     lua51Packages.lua
     p7zip
     cliphist
     wl-clipboard
     discord
-	discordo
+    discordo
     (flameshot.override { enableWlrSupport = true; }) # screenshot utility
     neofetch
     mpc # cli music player
@@ -161,8 +197,7 @@
     rmpc # tui mpc client
     unzip
     tmux
-	zk
-    cargo
+    zk
     gcc_multi
     lua-language-server # required for nvim completion
     nil # another nvim lsp
@@ -170,14 +205,15 @@
     lazygit # has tmux bindings
     ripgrep
     skim
-	fzf # keeping for dependency purposes
+    fzf # keeping for dependency purposes
     ranger
     keychain
     qpwgraph # pipewire gui
     teamspeak3
     pavucontrol # volume control - because nothing else was working
-	bat
-	libsecret
+    gnumake
+    bat
+    libsecret
     pywal16
     qutebrowser
     cifs-utils
@@ -185,7 +221,6 @@
     devenv # fucking mess
     direnv # Previously for devenv, may be good for venv still
     hypridle # dpms control
-    starship # terminal prompt customization
     bitwarden-desktop # password management
     bitwarden-cli # see above, but cli
     #rofi-rbw-wayland
@@ -254,8 +289,8 @@
   };
 
   #services.desktopManager.plasma6.enable = true;
-  services.displayManager.sddm.enable = true;
-  services.displayManager.sddm.wayland.enable = true;
+  #services.displayManager.sddm.enable = true;
+  #services.displayManager.sddm.wayland.enable = true;
 
   services.mpd = {
     enable = true;
@@ -270,6 +305,8 @@
     '';
   };
 
+	services.flatpak.enable = true;
+
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
 
@@ -278,7 +315,7 @@
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
-  networking.firewall.checkReversePath = false;
+	#networking.firewall.checkReversePath = false;
   # Copy the NixOS configuration file and link it from the resulting system
   # (/run/current-system/configuration.nix). This is useful in case you
   # accidentally delete configuration.nix.
