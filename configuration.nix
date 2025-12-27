@@ -153,6 +153,11 @@
     nerd-fonts.droid-sans-mono
   ];
 
+  programs.gnupg.agent = {
+    enable = true;
+    enableSSHSupport = true;
+  };
+
   environment.variables = { EDITOR = "nvim"; };
   # List packages installed in system profile.
   # You can use https://search.nixos.org/ to find more packages (and options).
@@ -164,6 +169,8 @@
 		ansible
     inputs.neovim-nightly-overlay.packages.${pkgs.system}.default
 		file-roller
+    pinentry
+    git-crypt
 		#(xfce.thunar.override { thunarPlugins = [ xfce.thunar-archive-plugin ]; })
     foot
     pkgs.beam27Packages.elixir

@@ -17,6 +17,9 @@
     };
 
     mangowc.url = "github:DreamMaoMao/mangowc";
+
+    sops-nix.url = "github:Mic92/sops-nix";
+    sops-nix.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = inputs@{ self, nixpkgs, home-manager, vgpu4nixos, ... }: {
@@ -45,6 +48,7 @@
           };
         }
         ./configuration.nix
+        inputs.sops-nix.nixosModules.sops
         ./common/hypr.nix
         ./common/nvidia.nix
         ./Omnius/hw-config.nix
