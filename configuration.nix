@@ -147,6 +147,7 @@
 	};
 
   fonts.packages = with pkgs; [
+    cantarell-fonts
   fira-code
   fira-code-symbols
     nerd-fonts.fira-code
